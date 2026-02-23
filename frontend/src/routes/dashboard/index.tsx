@@ -1,5 +1,6 @@
 import TaskCard from "@/components/TaskCard";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { getTasksFromStorage, saveTasksToStorage } from "@/lib/tasks";
 import { useEffect, useState } from "react";
 import {
   Sheet,
@@ -25,41 +26,72 @@ export const Route = createFileRoute("/dashboard/")({
 const initialTasks = [
   { id: 1, title: "Task 1", description: "Description 1", status: "todo" },
   { id: 2, title: "Task 2", description: "Description 2", status: "todo" },
-  { id: 3, title: "Task 3", description: "Description 3", status: "in progress" },
+  {
+    id: 3,
+    title: "Task 3",
+    description: "Description 3",
+    status: "in progress",
+  },
   { id: 4, title: "Task 4", description: "Description 4", status: "review" },
   { id: 5, title: "Task 5", description: "Description 5", status: "completed" },
   { id: 6, title: "Task 6", description: "Description 6", status: "todo" },
-  { id: 7, title: "Task 7", description: "Description 7", status: "in progress" },
+  {
+    id: 7,
+    title: "Task 7",
+    description: "Description 7",
+    status: "in progress",
+  },
   { id: 8, title: "Task 8", description: "Description 8", status: "review" },
   { id: 9, title: "Task 9", description: "Description 9", status: "completed" },
   { id: 10, title: "Task 10", description: "Description 10", status: "todo" },
 ];
 
-type Task = (typeof initialTasks)[number];
+type Task = {
+  id: number;
+  title: string;
+  description: string;
+  status: string;
+};
 
 const TASK_STATUSES = ["todo", "in progress", "review", "completed"] as const;
 
+/** Fixed column order – never changes when task statuses change */
+const COLUMN_ORDER: readonly string[] = [...TASK_STATUSES];
+
 const columnMeta: Record<string, { label: string; accent: string }> = {
   todo: { label: "To do", accent: "border-zinc-300 bg-zinc-50/50" },
-  "in progress": { label: "In progress", accent: "border-blue-200 bg-blue-50/30" },
+  "in progress": {
+    label: "In progress",
+    accent: "border-blue-200 bg-blue-50/30",
+  },
   review: { label: "Review", accent: "border-amber-200 bg-amber-50/30" },
-  completed: { label: "Completed", accent: "border-emerald-200 bg-emerald-50/30" },
+  completed: {
+    label: "Completed",
+    accent: "border-emerald-200 bg-emerald-50/30",
+  },
 };
 
 function RouteComponent() {
   const navigate = useNavigate();
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [columns, setColumns] = useState<string[]>([]);
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [newTaskDescription, setNewTaskDescription] = useState("");
   const [newTaskStatus, setNewTaskStatus] = useState<string>("todo");
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
   useEffect(() => {
-    setTasks(initialTasks);
-    const cols = [...new Set(initialTasks.map((task) => task.status))];
-    setColumns(cols);
+    const stored = getTasksFromStorage();
+    if (stored.length > 0) {
+      setTasks(stored);
+    } else {
+      setTasks(initialTasks);
+      saveTasksToStorage(initialTasks);
+    }
   }, []);
+
+  useEffect(() => {
+    if (tasks.length > 0) saveTasksToStorage(tasks);
+  }, [tasks]);
 
   useEffect(() => {
     const isLoggedIn = localStorage.getItem("isLoggedIn");
@@ -74,7 +106,7 @@ function RouteComponent() {
 
   const handleStatusChange = (taskId: number, newStatus: string) => {
     setTasks((prev) =>
-      prev.map((t) => (t.id === taskId ? { ...t, status: newStatus } : t))
+      prev.map((t) => (t.id === taskId ? { ...t, status: newStatus } : t)),
     );
   };
 
@@ -83,8 +115,10 @@ function RouteComponent() {
     setValidationErrors([]);
     const errors: string[] = [];
     if (!newTaskTitle.trim()) errors.push("Title is required.");
-    if (newTaskTitle.length > 200) errors.push("Title must be 200 characters or less.");
-    if (newTaskDescription.length > 1000) errors.push("Description must be 1000 characters or less.");
+    if (newTaskTitle.length > 200)
+      errors.push("Title must be 200 characters or less.");
+    if (newTaskDescription.length > 1000)
+      errors.push("Description must be 1000 characters or less.");
     if (errors.length > 0) {
       setValidationErrors(errors);
       return;
@@ -127,12 +161,12 @@ function RouteComponent() {
 
         <main className="mx-auto max-w-[1600px] p-6">
           <div className="grid grid-cols-4 gap-4">
-            {columns.map((column) => {
+            {COLUMN_ORDER.map((column) => {
               const meta = columnMeta[column] ?? { label: column, accent: "" };
               return (
                 <div
                   key={column}
-                  className={`rounded-xl border ${meta.accent} flex min-h-[520px] flex-col overflow-hidden`}
+                  className={`rounded-xl border-2 ${meta.accent} flex min-h-[520px] flex-col overflow-hidden`}
                 >
                   <div className="border-b border-inherit px-4 py-3">
                     <h2 className="text-sm font-semibold text-zinc-800 capitalize">
@@ -167,7 +201,8 @@ function RouteComponent() {
             New task
           </SheetTitle>
           <SheetDescription className="text-zinc-500 text-sm">
-            Add a task and assign a status. You can change it from the card later.
+            Add a task and assign a status. You can change it from the card
+            later.
           </SheetDescription>
         </SheetHeader>
         <form onSubmit={handleAddTask} className="mt-6 space-y-5 px-6 pb-8">
@@ -185,7 +220,10 @@ function RouteComponent() {
             </div>
           )}
           <div className="space-y-2">
-            <Label htmlFor="title" className="text-zinc-700 text-sm font-medium">
+            <Label
+              htmlFor="title"
+              className="text-zinc-700 text-sm font-medium"
+            >
               Title
             </Label>
             <input
@@ -201,7 +239,10 @@ function RouteComponent() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="description" className="text-zinc-700 text-sm font-medium">
+            <Label
+              htmlFor="description"
+              className="text-zinc-700 text-sm font-medium"
+            >
               Description
             </Label>
             <input
@@ -224,7 +265,11 @@ function RouteComponent() {
               </SelectTrigger>
               <SelectContent className="border-zinc-200 bg-white">
                 {TASK_STATUSES.map((status) => (
-                  <SelectItem key={status} value={status} className="capitalize">
+                  <SelectItem
+                    key={status}
+                    value={status}
+                    className="capitalize"
+                  >
                     {status}
                   </SelectItem>
                 ))}

@@ -5,6 +5,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Link } from "@tanstack/react-router";
 
 type Task = {
   id: number;
@@ -28,9 +29,10 @@ const statusColors: Record<string, string> = {
 
 const TaskCard = ({ task, statusOptions, onStatusChange }: TaskCardProps) => {
   return (
-    <div
-      className="bg-white rounded-lg border border-zinc-200 p-4 shadow-sm hover:shadow-md transition-shadow flex flex-col gap-3 group"
-      onClick={(e) => e.stopPropagation()}
+    <Link
+      to="/dashboard/task/$taskId"
+      params={{ taskId: String(task.id) }}
+      className="bg-white rounded-lg border border-zinc-200 p-4 shadow-sm hover:shadow-md transition-shadow flex flex-col gap-3 group block"
     >
       <h3 className="font-medium text-zinc-900 text-[15px] leading-snug">
         {task.title}
@@ -38,7 +40,11 @@ const TaskCard = ({ task, statusOptions, onStatusChange }: TaskCardProps) => {
       {task.description && (
         <p className="text-sm text-zinc-500 line-clamp-2">{task.description}</p>
       )}
-      <div className="mt-auto pt-1" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="mt-auto pt-1"
+        onClick={(e) => e.stopPropagation()}
+        onPointerDown={(e) => e.stopPropagation()}
+      >
         <Select
           value={task.status}
           onValueChange={(value) => onStatusChange(task.id, value)}
@@ -63,7 +69,7 @@ const TaskCard = ({ task, statusOptions, onStatusChange }: TaskCardProps) => {
           </SelectContent>
         </Select>
       </div>
-    </div>
+    </Link>
   );
 };
 
