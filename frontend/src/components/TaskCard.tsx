@@ -6,13 +6,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Link } from "@tanstack/react-router";
-
-type Task = {
-  id: number;
-  title: string;
-  description: string;
-  status: string;
-};
+import type { Task } from "@/lib/tasks";
 
 type TaskCardProps = {
   task: Task;
@@ -39,6 +33,20 @@ const TaskCard = ({ task, statusOptions, onStatusChange }: TaskCardProps) => {
       </h3>
       {task.description && (
         <p className="text-sm text-zinc-500 line-clamp-2">{task.description}</p>
+      )}
+      {(task.assigned || task.createdBy) && (
+        <div className="flex flex-col gap-0.5 mt-0.5">
+          {task.assigned && (
+            <p className="text-xs text-zinc-600">
+              <span className="font-medium">Assigned to:</span> {task.assigned}
+            </p>
+          )}
+          {task.createdBy && (
+            <p className="text-xs text-zinc-400">
+              <span className="font-medium">Created by:</span> {task.createdBy}
+            </p>
+          )}
+        </div>
       )}
       <div
         className="mt-auto pt-1"

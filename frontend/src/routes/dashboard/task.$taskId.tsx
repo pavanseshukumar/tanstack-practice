@@ -112,6 +112,22 @@ function TaskDetailComponent() {
           ) : (
             <p className="mt-3 text-zinc-400 text-sm">No description.</p>
           )}
+          {(task.assigned || task.createdBy) && (
+            <div className="mt-4 flex flex-col gap-2 rounded-lg border border-zinc-100 bg-zinc-50 p-4">
+              {task.assigned && (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-zinc-500">Assigned to:</span>
+                  <span className="text-sm text-zinc-900">{task.assigned}</span>
+                </div>
+              )}
+              {task.createdBy && (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-zinc-500">Created by:</span>
+                  <span className="text-sm text-zinc-900">{task.createdBy}</span>
+                </div>
+              )}
+            </div>
+          )}
           <div className="mt-6 pt-6 border-t border-zinc-200">
             <Label className="text-zinc-700 text-sm font-medium">Status</Label>
             <Select value={task.status} onValueChange={handleStatusChange}>

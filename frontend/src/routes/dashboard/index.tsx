@@ -1,6 +1,6 @@
 import TaskCard from "@/components/TaskCard";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { getTasksFromStorage, saveTasksToStorage } from "@/lib/tasks";
+import { getTasksFromStorage, saveTasksToStorage, type Task } from "@/lib/tasks";
 import { useEffect, useState } from "react";
 import {
   Sheet,
@@ -23,35 +23,17 @@ export const Route = createFileRoute("/dashboard/")({
   component: RouteComponent,
 });
 
-const initialTasks = [
-  { id: 1, title: "Task 1", description: "Description 1", status: "todo" },
-  { id: 2, title: "Task 2", description: "Description 2", status: "todo" },
-  {
-    id: 3,
-    title: "Task 3",
-    description: "Description 3",
-    status: "in progress",
-  },
-  { id: 4, title: "Task 4", description: "Description 4", status: "review" },
-  { id: 5, title: "Task 5", description: "Description 5", status: "completed" },
-  { id: 6, title: "Task 6", description: "Description 6", status: "todo" },
-  {
-    id: 7,
-    title: "Task 7",
-    description: "Description 7",
-    status: "in progress",
-  },
-  { id: 8, title: "Task 8", description: "Description 8", status: "review" },
-  { id: 9, title: "Task 9", description: "Description 9", status: "completed" },
-  { id: 10, title: "Task 10", description: "Description 10", status: "todo" },
+const initialTasks: Task[] = [
+  { id: 1, title: "Database Schema Design", description: "Design the initial PostgreSQL schema for the users and projects tables.", status: "completed", createdBy: "Alice", assigned: "DBA Team" },
+  { id: 2, title: "Setup Authentication", description: "Implement JWT based authentication using Lucia auth.", status: "review", createdBy: "Bob", assigned: "Alice" },
+  { id: 3, title: "Create API Routes", description: "Build RESTful endpoints for CRUD operations on tasks.", status: "in progress", createdBy: "Charlie", assigned: "Bob" },
+  { id: 4, title: "Frontend Layout", description: "Build the main dashboard layout using React Router and Tailwind css.", status: "in progress", createdBy: "Alice", assigned: "Charlie" },
+  { id: 5, title: "Task Card Component", description: "Implement the drag-and-drop compatible task card.", status: "todo", createdBy: "Alice", assigned: "David" },
+  { id: 6, title: "User Settings Page", description: "Allow users to update their profile and notification preferences.", status: "todo", createdBy: "Bob", assigned: "Unassigned" },
+  { id: 7, title: "Write E2E Tests", description: "Setup Playwright and write initial test suite for the login flow.", status: "todo", createdBy: "Quality Assurance", assigned: "Testing Team" },
 ];
 
-type Task = {
-  id: number;
-  title: string;
-  description: string;
-  status: string;
-};
+
 
 const TASK_STATUSES = ["todo", "in progress", "review", "completed"] as const;
 
@@ -76,6 +58,8 @@ function RouteComponent() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [newTaskDescription, setNewTaskDescription] = useState("");
+  const [newTaskCreatedBy, setNewTaskCreatedBy] = useState("");
+  const [newTaskAssigned, setNewTaskAssigned] = useState("");
   const [newTaskStatus, setNewTaskStatus] = useState<string>("todo");
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
@@ -128,10 +112,14 @@ function RouteComponent() {
       title: newTaskTitle.trim(),
       description: newTaskDescription.trim(),
       status: newTaskStatus,
+      createdBy: newTaskCreatedBy.trim() || undefined,
+      assigned: newTaskAssigned.trim() || undefined,
     };
     setTasks((prev) => [...prev, newTask]);
     setNewTaskTitle("");
     setNewTaskDescription("");
+    setNewTaskCreatedBy("");
+    setNewTaskAssigned("");
     setNewTaskStatus("todo");
   };
 
@@ -252,6 +240,44 @@ function RouteComponent() {
               value={newTaskDescription}
               onChange={(e) => {
                 setNewTaskDescription(e.target.value);
+                if (validationErrors.length) setValidationErrors([]);
+              }}
+              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-1 focus:border-transparent"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label
+              htmlFor="createdBy"
+              className="text-zinc-700 text-sm font-medium"
+            >
+              Created by
+            </Label>
+            <input
+              id="createdBy"
+              type="text"
+              placeholder="e.g. Alice"
+              value={newTaskCreatedBy}
+              onChange={(e) => {
+                setNewTaskCreatedBy(e.target.value);
+                if (validationErrors.length) setValidationErrors([]);
+              }}
+              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-1 focus:border-transparent"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label
+              htmlFor="assigned"
+              className="text-zinc-700 text-sm font-medium"
+            >
+              Assigned to
+            </Label>
+            <input
+              id="assigned"
+              type="text"
+              placeholder="e.g. Bob"
+              value={newTaskAssigned}
+              onChange={(e) => {
+                setNewTaskAssigned(e.target.value);
                 if (validationErrors.length) setValidationErrors([]);
               }}
               className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-1 focus:border-transparent"

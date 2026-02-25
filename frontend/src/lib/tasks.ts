@@ -5,6 +5,8 @@ export type Task = {
   title: string;
   description: string;
   status: string;
+  createdBy?: string;
+  assigned?: string;
 };
 
 export function getTasksFromStorage(): Task[] {
