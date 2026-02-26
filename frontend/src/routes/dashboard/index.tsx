@@ -85,54 +85,72 @@ function ProjectsListPage() {
     navigate({ to: "/dashboard/project/$projectId", params: { projectId: project.id } });
   };
 
+  const noteRotations = [
+    "rotate-[-2deg]",
+    "rotate-[1.5deg]",
+    "rotate-[-1deg]",
+    "rotate-[2deg]",
+    "rotate-[-1.5deg]",
+    "rotate-[1deg]",
+  ];
+  const noteColors = [
+    "bg-amber-50 border-amber-200/80 shadow-amber-200/20",
+    "bg-sky-50/90 border-sky-200/80 shadow-sky-200/20",
+    "bg-rose-50/90 border-rose-200/80 shadow-rose-200/20",
+    "bg-emerald-50/90 border-emerald-200/80 shadow-emerald-200/20",
+    "bg-violet-50/90 border-violet-200/80 shadow-violet-200/20",
+    "bg-amber-50 border-amber-200/80 shadow-amber-200/20",
+  ];
+
   return (
-    <div className="min-h-full bg-zinc-50">
-      <div className="mx-auto max-w-4xl px-6 py-8">
-        <div className="flex flex-col gap-1 mb-8">
-          <h1 className="text-2xl font-semibold text-zinc-900 tracking-tight">
+    <div className="min-h-full bg-gradient-to-br from-stone-100 via-amber-50/40 to-stone-100">
+      <div className="mr-auto max-w-6xl pl-20 pr-6 py-10">
+        <header className="mb-12">
+          <h1 className="text-[32px] font-bold text-stone-800 tracking-tight">
             Projects
           </h1>
-          <p className="text-sm text-zinc-500">
-            Select a project to open its task board, or create a new one.
+          <p className="mt-2 text-base text-stone-500 max-w-md">
+            Pick a note to open its board, or pin a new one.
           </p>
-        </div>
+        </header>
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {projects.map((project) => {
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 pb-8">
+          {projects.map((project, i) => {
             const taskCount = getTasksByProjectId(project.id).length;
+            const rotation = noteRotations[i % noteRotations.length];
+            const colors = noteColors[i % noteColors.length];
             return (
               <Link
                 key={project.id}
                 to="/dashboard/project/$projectId"
                 params={{ projectId: project.id }}
-                className="group flex min-h-[152px] flex-col rounded-xl border border-zinc-200 bg-white p-5 shadow-sm transition-all hover:border-zinc-300 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-2"
+                className="group block w-full"
               >
-                <div className="flex flex-1 flex-col gap-3">
-                  <div className="flex items-start gap-3">
-                    <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-zinc-600 group-hover:bg-zinc-200 transition-colors">
-                      <FolderOpen className="size-5" />
+                <div
+                  className={`relative flex min-h-[220px] flex-col rounded-sm border-2 ${colors} p-6 shadow-lg transition-transform duration-200 hover:rotate-0 hover:scale-[1.02] hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-stone-400 focus:ring-offset-4 focus:ring-offset-transparent ${rotation}`}
+                  style={{ boxShadow: "4px 6px 12px rgba(0,0,0,0.08)" }}
+                >
+                  <div className="absolute right-2 top-2 h-4 w-4 rounded-full bg-stone-300/40 group-hover:bg-stone-400/50" title="Pin" />
+                  <div className="flex flex-1 flex-col gap-2 pt-1">
+                    <h2 className="text-lg font-semibold text-stone-800 truncate pr-4">
+                      {project.name}
+                    </h2>
+                    <div className="min-h-[3.75rem]">
+                      {project.description ? (
+                        <p className="text-base text-stone-600 line-clamp-3">
+                          {project.description}
+                        </p>
+                      ) : null}
                     </div>
-                    <div className="min-w-0 flex-1 space-y-2">
-                      <h2 className="font-semibold text-zinc-900 truncate">
-                        {project.name}
-                      </h2>
-                      <div className="min-h-[2.5rem]">
-                        {project.description ? (
-                          <p className="text-sm text-zinc-500 line-clamp-2">
-                            {project.description}
-                          </p>
-                        ) : null}
-                      </div>
-                      <div className="flex items-center gap-1.5 text-xs text-zinc-400">
-                        <ListTodo className="size-3.5 shrink-0" />
-                        <span>{taskCount} task{taskCount !== 1 ? "s" : ""}</span>
-                      </div>
+                    <div className="mt-auto flex items-center gap-1.5 text-sm text-stone-500">
+                      <ListTodo className="size-3.5 shrink-0" />
+                      <span>{taskCount} task{taskCount !== 1 ? "s" : ""}</span>
                     </div>
                   </div>
+                  <span className="mt-3 inline-flex text-base font-medium text-stone-600 group-hover:text-stone-800 transition-colors">
+                    Open board →
+                  </span>
                 </div>
-                <span className="mt-4 inline-flex text-sm font-medium text-zinc-600 group-hover:text-zinc-900 transition-colors">
-                  Open board →
-                </span>
               </Link>
             );
           })}
@@ -141,23 +159,25 @@ function ProjectsListPage() {
             <SheetTrigger asChild>
               <button
                 type="button"
-                className="flex min-h-[152px] flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-zinc-200 bg-white p-5 text-zinc-500 transition-colors hover:border-zinc-300 hover:bg-zinc-50 hover:text-zinc-700 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-2"
+                className="flex w-full min-h-[220px] flex-col items-center justify-center gap-3 rounded-sm border-2 border-dashed border-stone-300 bg-white/60 p-6 text-stone-500 transition-all duration-200 hover:rotate-0 hover:border-stone-400 hover:bg-white/80 hover:text-stone-700 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-stone-400 focus:ring-offset-4"
+                style={{ transform: "rotate(1.5deg)" }}
               >
-                <div className="flex size-10 items-center justify-center rounded-full bg-zinc-100">
-                  <Plus className="size-5" />
+                <div className="flex size-12 items-center justify-center rounded-full bg-stone-100">
+                  <Plus className="size-6" />
                 </div>
-                <span className="text-sm font-medium">New project</span>
+                <span className="text-base font-medium">New project</span>
+                <span className="text-sm text-stone-400">Pin a new note</span>
               </button>
             </SheetTrigger>
             <SheetContent className="border-zinc-200 bg-white sm:max-w-md">
-              <SheetHeader>
-                <SheetTitle className="text-zinc-900">Create project</SheetTitle>
-                <SheetDescription className="text-zinc-500">
+              <SheetHeader className="space-y-1">
+                <SheetTitle className="text-lg font-semibold text-zinc-900">Create project</SheetTitle>
+                <SheetDescription className="text-zinc-500 text-sm">
                   Add a project to organize tasks. You can open its task board
                   right after.
                 </SheetDescription>
               </SheetHeader>
-              <form onSubmit={handleCreateProject} className="space-y-4 py-6 px-1">
+              <form onSubmit={handleCreateProject} className="mt-6 space-y-5 px-6 pb-8">
                 {createError && (
                   <p className="text-sm text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
                     {createError}
@@ -210,20 +230,22 @@ function ProjectsListPage() {
         </div>
 
         {projects.length === 0 && (
-          <div className="mt-12 rounded-xl border border-zinc-200 bg-white p-8 text-center">
-            <FolderOpen className="mx-auto size-12 text-zinc-300" />
-            <h2 className="mt-4 text-lg font-medium text-zinc-900">
-              No projects yet
+          <div className="mx-auto mt-16 max-w-sm rounded-sm border-2 border-dashed border-stone-300 bg-white/70 p-10 text-center shadow-md" style={{ transform: "rotate(-0.5deg)" }}>
+            <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-stone-100">
+              <FolderOpen className="size-7 text-stone-500" />
+            </div>
+            <h2 className="mt-5 text-2xl font-semibold text-stone-800">
+              No notes yet
             </h2>
-            <p className="mt-2 text-sm text-zinc-500 max-w-sm mx-auto">
-              Create your first project to start organizing tasks on a board.
+            <p className="mt-2 text-base text-stone-500">
+              Pin your first project to get started.
             </p>
             <Button
-              className="mt-6 bg-zinc-900 hover:bg-zinc-800"
+              className="mt-6 bg-stone-800 hover:bg-stone-700"
               onClick={() => setCreateOpen(true)}
             >
               <Plus className="size-4 mr-2" />
-              Create project
+              New project
             </Button>
           </div>
         )}
