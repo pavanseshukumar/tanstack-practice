@@ -1,5 +1,5 @@
 import TaskCard from "@/components/TaskCard";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { getTasksFromStorage, saveTasksToStorage, type Task } from "@/lib/tasks";
 import { useEffect, useState } from "react";
 import {
@@ -33,11 +33,8 @@ const initialTasks: Task[] = [
   { id: 7, title: "Write E2E Tests", description: "Setup Playwright and write initial test suite for the login flow.", status: "todo", createdBy: "Quality Assurance", assigned: "Testing Team" },
 ];
 
-
-
 const TASK_STATUSES = ["todo", "in progress", "review", "completed"] as const;
 
-/** Fixed column order – never changes when task statuses change */
 const COLUMN_ORDER: readonly string[] = [...TASK_STATUSES];
 
 const columnMeta: Record<string, { label: string; accent: string }> = {
@@ -54,7 +51,6 @@ const columnMeta: Record<string, { label: string; accent: string }> = {
 };
 
 function RouteComponent() {
-  const navigate = useNavigate();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [newTaskDescription, setNewTaskDescription] = useState("");
@@ -76,17 +72,6 @@ function RouteComponent() {
   useEffect(() => {
     if (tasks.length > 0) saveTasksToStorage(tasks);
   }, [tasks]);
-
-  useEffect(() => {
-    const isLoggedIn = localStorage.getItem("isLoggedIn");
-    if (!isLoggedIn) navigate({ to: "/login" });
-  }, [navigate]);
-
-  const handleLogout = () => {
-    localStorage.removeItem("user");
-    localStorage.removeItem("isLoggedIn");
-    navigate({ to: "/login" });
-  };
 
   const handleStatusChange = (taskId: number, newStatus: string) => {
     setTasks((prev) =>
@@ -125,30 +110,25 @@ function RouteComponent() {
 
   return (
     <Sheet>
-      <div className="min-h-screen bg-zinc-100">
-        <header className="sticky top-0 z-10 border-b border-zinc-200 bg-white/95 backdrop-blur supports-backdrop-filter:bg-white/80">
-          <div className="mx-auto flex max-w-[1600px] items-center justify-between px-6 py-4">
-            <h1 className="text-xl font-semibold text-zinc-900 tracking-tight">
+      <div className="bg-zinc-100 min-h-full">
+        <div className="flex items-center justify-between px-6 py-4">
+          <div>
+            <h2 className="text-xl font-semibold text-zinc-900 tracking-tight">
               Task board
-            </h1>
-            <div className="flex items-center gap-3">
-              <SheetTrigger asChild>
-                <button className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-2 transition-colors">
-                  Add task
-                </button>
-              </SheetTrigger>
-              <button
-                onClick={handleLogout}
-                className="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 transition-colors"
-              >
-                Log out
-              </button>
-            </div>
+            </h2>
+            <p className="text-sm text-zinc-500 mt-0.5">
+              {tasks.length} tasks across {COLUMN_ORDER.length} columns
+            </p>
           </div>
-        </header>
+          <SheetTrigger asChild>
+            <button className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-2 transition-colors">
+              + Add task
+            </button>
+          </SheetTrigger>
+        </div>
 
-        <main className="mx-auto max-w-[1600px] p-6">
-          <div className="grid grid-cols-4 gap-4">
+        <div className="px-6 pb-6">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {COLUMN_ORDER.map((column) => {
               const meta = columnMeta[column] ?? { label: column, accent: "" };
               return (
@@ -180,7 +160,7 @@ function RouteComponent() {
               );
             })}
           </div>
-        </main>
+        </div>
       </div>
 
       <SheetContent className="w-full max-w-md border-zinc-200 bg-white sm:max-w-md">

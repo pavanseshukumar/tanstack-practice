@@ -1,7 +1,6 @@
 import {
   createFileRoute,
   Link,
-  useNavigate,
 } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
@@ -33,22 +32,16 @@ const statusColors: Record<string, string> = {
 
 function TaskDetailComponent() {
   const { taskId } = Route.useParams();
-  const navigate = useNavigate();
   const id = Number(taskId);
   const [task, setTask] = useState<Task | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const isLoggedIn = localStorage.getItem("isLoggedIn");
-    if (!isLoggedIn) {
-      navigate({ to: "/login" });
-      return;
-    }
     const tasks = getTasksFromStorage();
     const found = tasks.find((t) => t.id === id);
     setTask(found ?? null);
     setLoading(false);
-  }, [id, navigate]);
+  }, [id]);
 
   const handleStatusChange = (newStatus: string) => {
     if (!task) return;
@@ -62,15 +55,15 @@ function TaskDetailComponent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-zinc-100 flex items-center justify-center">
-        <p className="text-zinc-500">Loading…</p>
+      <div className="flex min-h-full items-center justify-center bg-zinc-100">
+        <p className="text-zinc-500">Loading...</p>
       </div>
     );
   }
 
   if (task === null) {
     return (
-      <div className="min-h-screen bg-zinc-100 flex flex-col items-center justify-center gap-4 p-4">
+      <div className="flex min-h-full flex-col items-center justify-center gap-4 bg-zinc-100 p-4">
         <p className="text-zinc-600">Task not found.</p>
         <Link
           to="/dashboard"
@@ -83,24 +76,22 @@ function TaskDetailComponent() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-100">
-      <header className="sticky top-0 z-10 border-b border-zinc-200 bg-white/95 backdrop-blur supports-backdrop-filter:bg-white/80">
-        <div className="mx-auto flex max-w-3xl items-center justify-between px-6 py-4">
-          <Link
-            to="/dashboard"
-            className="text-sm font-medium text-zinc-600 hover:text-zinc-900"
-          >
-            ← Back to board
-          </Link>
-          <span
-            className={`rounded-full border px-2.5 py-1 text-xs font-medium capitalize ${statusColors[task.status] ?? "bg-zinc-100 text-zinc-700 border-zinc-200"}`}
-          >
-            {task.status}
-          </span>
-        </div>
-      </header>
+    <div className="min-h-full bg-zinc-100">
+      <div className="flex items-center justify-between px-6 py-4">
+        <Link
+          to="/dashboard"
+          className="text-sm font-medium text-zinc-600 hover:text-zinc-900 transition-colors"
+        >
+          &larr; Back to board
+        </Link>
+        <span
+          className={`rounded-full border px-2.5 py-1 text-xs font-medium capitalize ${statusColors[task.status] ?? "bg-zinc-100 text-zinc-700 border-zinc-200"}`}
+        >
+          {task.status}
+        </span>
+      </div>
 
-      <main className="mx-auto max-w-3xl px-6 py-8">
+      <div className="mx-auto max-w-3xl px-6 pb-8">
         <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
           <h1 className="text-2xl font-semibold text-zinc-900 tracking-tight">
             {task.title}
@@ -150,7 +141,7 @@ function TaskDetailComponent() {
             </Select>
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }
