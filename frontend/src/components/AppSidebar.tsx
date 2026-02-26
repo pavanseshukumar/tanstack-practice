@@ -1,12 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import {
-  LayoutDashboard,
-  ListTodo,
-  LogOut,
-  Settings,
-  Users,
-} from "lucide-react";
+import { ListTodo, LogOut, FolderOpen } from "lucide-react";
 import { Link, useMatches } from "@tanstack/react-router";
 import {
   Sidebar,
@@ -24,13 +18,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-
-const navItems = [
-  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { title: "Tasks", url: "/dashboard", icon: ListTodo },
-  { title: "Team", url: "/dashboard", icon: Users },
-  { title: "Settings", url: "/dashboard", icon: Settings },
-];
+import { getProjectsFromStorage, type Project } from "@/lib/projects";
 
 function getUserEmail(): string {
   try {
@@ -87,11 +75,22 @@ function LogoutConfirmDialog({
   );
 }
 
+function getCurrentProjectId(pathname: string): string | null {
+  const match = pathname.match(/^\/dashboard\/project\/([^/]+)/);
+  return match ? match[1] : null;
+}
+
 export function AppSidebar() {
   const navigate = useNavigate();
   const matches = useMatches();
   const currentPath = matches[matches.length - 1]?.fullPath ?? "";
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const currentProjectId = getCurrentProjectId(currentPath);
+
+  useEffect(() => {
+    setProjects(getProjectsFromStorage());
+  }, [currentPath]); // re-fetch when route changes (e.g. after creating a project)
 
   const email = getUserEmail();
   const initials = getInitials(email);
@@ -120,19 +119,34 @@ export function AppSidebar() {
 
         <SidebarContent>
           <SidebarGroup>
-            {/* <SidebarGroupLabel>Navigation</SidebarGroupLabel> */}
+            <SidebarGroupLabel className="text-xs text-zinc-500">Projects</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {navItems.map((item) => (
-                  <SidebarMenuItem key={item.title}>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={currentPath === "/dashboard" || currentPath === "/dashboard/"}
+                    tooltip="All projects"
+                  >
+                    <Link to="/dashboard">
+                      <FolderOpen className="size-4" />
+                      <span>All projects</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                {projects.map((project) => (
+                  <SidebarMenuItem key={project.id}>
                     <SidebarMenuButton
                       asChild
-                      isActive={currentPath === item.url}
-                      tooltip={item.title}
+                      isActive={currentProjectId === project.id}
+                      tooltip={project.name}
                     >
-                      <Link to={item.url}>
-                        <item.icon className="size-4" />
-                        <span>{item.title}</span>
+                      <Link
+                        to="/dashboard/project/$projectId"
+                        params={{ projectId: project.id }}
+                      >
+                        <ListTodo className="size-4" />
+                        <span className="truncate">{project.name}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

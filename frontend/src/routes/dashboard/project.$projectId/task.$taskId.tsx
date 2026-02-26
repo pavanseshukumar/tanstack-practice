@@ -14,13 +14,15 @@ import { Label } from "@/components/ui/label";
 import {
   getTasksFromStorage,
   saveTasksToStorage,
+  getTasksByProjectId,
   type Task,
 } from "@/lib/tasks";
+import { getProjectById } from "@/lib/projects";
 
 const TASK_STATUSES = ["todo", "in progress", "review", "completed"] as const;
 
-export const Route = createFileRoute("/dashboard/task/$taskId")({
-  component: TaskDetailComponent,
+export const Route = createFileRoute("/dashboard/project/$projectId/task/$taskId")({
+  component: ProjectTaskDetailPage,
 });
 
 const statusColors: Record<string, string> = {
@@ -30,18 +32,19 @@ const statusColors: Record<string, string> = {
   completed: "bg-emerald-50 text-emerald-700 border-emerald-200",
 };
 
-function TaskDetailComponent() {
-  const { taskId } = Route.useParams();
+function ProjectTaskDetailPage() {
+  const { projectId, taskId } = Route.useParams();
   const id = Number(taskId);
   const [task, setTask] = useState<Task | null>(null);
   const [loading, setLoading] = useState(true);
+  const project = getProjectById(projectId);
 
   useEffect(() => {
-    const tasks = getTasksFromStorage();
+    const tasks = getTasksByProjectId(projectId);
     const found = tasks.find((t) => t.id === id);
     setTask(found ?? null);
     setLoading(false);
-  }, [id]);
+  }, [projectId, id]);
 
   const handleStatusChange = (newStatus: string) => {
     if (!task) return;
@@ -61,32 +64,30 @@ function TaskDetailComponent() {
     );
   }
 
-  if (task === null) {
+  if (task === null || !project) {
     return (
       <div className="flex min-h-full flex-col items-center justify-center gap-4 bg-zinc-100 p-4">
-        <p className="text-zinc-600">Task not found.</p>
+        <p className="text-zinc-600">Task or project not found.</p>
         <Link
-          to="/dashboard"
+          to="/dashboard/project/$projectId"
+          params={{ projectId }}
           className="text-sm font-medium text-zinc-900 hover:underline"
         >
-          Back to projects
+          Back to board
         </Link>
       </div>
     );
   }
 
-  const backTo = task.projectId
-    ? { to: "/dashboard/project/$projectId" as const, params: { projectId: task.projectId } }
-    : { to: "/dashboard" as const };
-
   return (
     <div className="min-h-full bg-zinc-100">
       <div className="flex items-center justify-between px-6 py-4">
         <Link
-          {...backTo}
+          to="/dashboard/project/$projectId"
+          params={{ projectId }}
           className="text-sm font-medium text-zinc-600 hover:text-zinc-900 transition-colors"
         >
-          &larr; Back to board
+          &larr; Back to {project.name}
         </Link>
         <span
           className={`rounded-full border px-2.5 py-1 text-xs font-medium capitalize ${statusColors[task.status] ?? "bg-zinc-100 text-zinc-700 border-zinc-200"}`}

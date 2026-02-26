@@ -10,6 +10,7 @@ import type { Task } from "@/lib/tasks";
 
 type TaskCardProps = {
   task: Task;
+  projectId?: string;
   statusOptions: readonly string[];
   onStatusChange: (taskId: number, newStatus: string) => void;
 };
@@ -21,11 +22,14 @@ const statusColors: Record<string, string> = {
   completed: "bg-emerald-50 text-emerald-700 border-emerald-200",
 };
 
-const TaskCard = ({ task, statusOptions, onStatusChange }: TaskCardProps) => {
+const TaskCard = ({ task, projectId, statusOptions, onStatusChange }: TaskCardProps) => {
+  const taskLink =
+    projectId != null
+      ? { to: "/dashboard/project/$projectId/task/$taskId" as const, params: { projectId, taskId: String(task.id) } }
+      : { to: "/dashboard/task/$taskId" as const, params: { taskId: String(task.id) } };
   return (
     <Link
-      to="/dashboard/task/$taskId"
-      params={{ taskId: String(task.id) }}
+      {...taskLink}
       className="bg-white rounded-lg border border-zinc-200 p-4 shadow-sm hover:shadow-md transition-shadow flex flex-col gap-3 group block"
     >
       <h3 className="font-medium text-zinc-900 text-[15px] leading-snug">
