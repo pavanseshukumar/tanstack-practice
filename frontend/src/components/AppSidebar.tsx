@@ -14,7 +14,6 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -37,12 +36,12 @@ function getUserEmail(): string {
     const raw = localStorage.getItem("user");
     if (raw) {
       const parsed = JSON.parse(raw);
-      return parsed.email ?? "user@example.com";
+      return parsed.email ?? "user";
     }
   } catch {
     /* empty */
   }
-  return "user@example.com";
+  return "user";
 }
 
 function getInitials(email: string): string {
