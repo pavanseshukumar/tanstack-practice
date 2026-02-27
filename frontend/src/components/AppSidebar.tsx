@@ -174,21 +174,41 @@ export function AppSidebar() {
               <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-zinc-900 text-white">
                 <ListTodo className="size-4" />
               </div>
+              <span className="text-base font-semibold tracking-tight text-zinc-900 truncate flex-1 min-w-0 group-data-[collapsible=icon]:hidden">
+                TaskBoard
+              </span>
+              {isMobile && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-8 shrink-0"
+                  onClick={closeMobileSidebar}
+                  aria-label="Close menu"
+                >
+                  <X className="size-4" />
+                </Button>
+              )}
+            </div>
+          </SidebarHeader>
+
+          <SidebarContent className="min-h-0 flex-1 overflow-auto">
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-xs text-zinc-500">Project</SidebarGroupLabel>
+            <SidebarGroupContent>
               {sidebarLoading ? (
-                <div className="flex-1 min-w-0 group-data-[collapsible=icon]:hidden">
-                  <Skeleton className="h-4 w-24 bg-zinc-200/80" />
-                  <Skeleton className="h-3 w-16 mt-1 bg-zinc-200/60" />
+                <div className="px-2 py-1">
+                  <Skeleton className="h-9 w-full rounded-md bg-zinc-200/80" />
                 </div>
               ) : (
                 <Popover open={projectPopoverOpen} onOpenChange={setProjectPopoverOpen}>
                   <PopoverTrigger asChild>
                     <button
                       type="button"
-                      className="flex flex-1 min-w-0 items-center gap-2 rounded-md p-0 text-left outline-none ring-sidebar-ring focus-visible:ring-2 group-data-[collapsible=icon]:hidden hover:opacity-90"
+                      className="flex w-full min-w-0 items-center gap-2 rounded-md p-2 text-left outline-none ring-sidebar-ring focus-visible:ring-2 group-data-[collapsible=icon]:hidden hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                       aria-label="Switch project"
                     >
                       <div className="flex-1 min-w-0 truncate">
-                        <span className="block text-base font-semibold tracking-tight text-zinc-900 truncate">
+                        <span className="block text-sm font-medium text-zinc-900 truncate">
                           {currentProjectId
                             ? (getProjectById(currentProjectId)?.name ?? "Project")
                             : "All projects"}
@@ -238,21 +258,8 @@ export function AppSidebar() {
                   </PopoverContent>
                 </Popover>
               )}
-              {isMobile && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="size-8 shrink-0"
-                  onClick={closeMobileSidebar}
-                  aria-label="Close menu"
-                >
-                  <X className="size-4" />
-                </Button>
-              )}
-            </div>
-          </SidebarHeader>
-
-          <SidebarContent className="min-h-0 flex-1 overflow-auto">
+            </SidebarGroupContent>
+          </SidebarGroup>
 
           {currentProjectId && (
             <SidebarGroup>
