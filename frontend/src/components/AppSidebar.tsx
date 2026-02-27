@@ -98,7 +98,10 @@ export function AppSidebar() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [sidebarLoading, setSidebarLoading] = useState(true);
   const [projectPopoverOpen, setProjectPopoverOpen] = useState(false);
-  const currentProjectId = getCurrentProjectId(currentPath);
+  const currentProjectId =
+    (matches.find((m) => m.params && "projectId" in m.params)?.params as { projectId?: string } | undefined)?.projectId ??
+    getCurrentProjectId(typeof window !== "undefined" ? window.location.pathname : currentPath);
+  const selectedProject = currentProjectId ? getProjectById(currentProjectId) : null;
   const resize = useSidebarResize();
   const { isMobile, state, setOpenMobile } = useSidebar();
   const isExpanded = state === "expanded";
@@ -209,12 +212,12 @@ export function AppSidebar() {
                     >
                       <div className="flex-1 min-w-0 truncate">
                         <span className="block text-sm font-medium text-zinc-900 truncate">
-                          {currentProjectId
-                            ? (getProjectById(currentProjectId)?.name ?? "Project")
-                            : "All projects"}
+                          {selectedProject ? selectedProject.name : "All projects"}
                         </span>
                         <span className="block text-xs text-zinc-500 truncate mt-0.5">
-                          {currentProjectId ? "Project" : "Dashboard"}
+                          {selectedProject
+                            ? (selectedProject.description || "Project")
+                            : "Dashboard"}
                         </span>
                       </div>
                       <ChevronsUpDown className="size-4 shrink-0 text-zinc-400" />
