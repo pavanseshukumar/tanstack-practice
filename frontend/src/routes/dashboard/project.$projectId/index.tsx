@@ -179,13 +179,16 @@ function ProjectBoardPage() {
           </div>
         </div>
         <div className="px-4 pb-6 sm:px-6">
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
+          <div
+            className="flex gap-3 overflow-x-auto overflow-y-hidden pb-2 lg:grid lg:grid-cols-4 lg:overflow-visible lg:gap-4 lg:pb-0"
+            style={{ WebkitOverflowScrolling: "touch" }}
+          >
             {COLUMN_ORDER.map((column) => {
               const meta = columnMeta[column] ?? { label: column, accent: "" };
               return (
                 <div
                   key={column}
-                  className={`rounded-xl border-2 ${meta.accent} flex min-h-[280px] flex-col overflow-hidden sm:min-h-[400px] lg:min-h-[520px]`}
+                  className={`rounded-xl border-2 ${meta.accent} flex min-h-[280px] flex-shrink-0 flex-col overflow-hidden w-[min(85vw,300px)] sm:w-[min(88vw,340px)] sm:min-h-[400px] lg:min-h-[520px] lg:min-w-0 lg:w-auto`}
                 >
                   <div className="border-b border-inherit px-4 py-3">
                     <Skeleton className="h-4 w-16 bg-zinc-200/80" />
@@ -243,13 +246,17 @@ function ProjectBoardPage() {
         </header>
 
         <div className="px-4 pb-24 sm:pb-6 sm:px-6">
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
+          {/* Responsive: horizontal scroll on mobile/tablet, 4-col grid on lg+ */}
+          <div
+            className="flex gap-3 overflow-x-auto overflow-y-hidden pb-2 scroll-smooth snap-x snap-mandatory lg:grid lg:grid-cols-4 lg:overflow-visible lg:gap-4 lg:snap-none lg:pb-0"
+            style={{ WebkitOverflowScrolling: "touch" }}
+          >
             {COLUMN_ORDER.map((column) => {
               const meta = columnMeta[column] ?? { label: column, accent: "" };
               return (
                 <div
                   key={column}
-                  className={`rounded-xl border-2 ${meta.accent} flex min-h-[280px] flex-col overflow-hidden sm:min-h-[400px] lg:min-h-[520px]`}
+                  className={`rounded-xl border-2 ${meta.accent} flex min-h-[280px] flex-shrink-0 flex-col overflow-hidden sm:min-h-[400px] lg:min-h-[520px] lg:min-w-0 lg:w-auto w-[min(85vw,300px)] sm:w-[min(88vw,340px)] snap-start`}
                 >
                   <div className="border-b border-inherit px-3 py-2 sm:px-4 sm:py-3">
                     <h2 className="text-xs font-semibold text-zinc-800 capitalize sm:text-sm">
