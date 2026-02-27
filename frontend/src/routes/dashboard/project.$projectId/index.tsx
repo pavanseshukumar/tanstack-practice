@@ -293,7 +293,7 @@ function ProjectBoardPage() {
         aria-label="Add task"
       >
         <Plus className="size-4" />
-        + Add task
+        Add task
       </button>
 
       <SheetContent className="w-full max-w-[calc(100vw-2rem)] border-zinc-200 bg-white sm:max-w-md">
