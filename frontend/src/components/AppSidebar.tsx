@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { ListTodo, LogOut, FolderOpen, X } from "lucide-react";
+import { ListTodo, LogOut, LayoutDashboard, Users, Settings, ListChecks, X } from "lucide-react";
 import { Link, useMatches } from "@tanstack/react-router";
 import {
   Sidebar,
@@ -19,8 +19,15 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useSidebarResize } from "@/contexts/SidebarResizeContext";
-import { getProjectsFromStorage, type Project } from "@/lib/projects";
+import { getProjectsFromStorage, getProjectById, type Project } from "@/lib/projects";
 
 function getUserEmail(): string {
   try {
@@ -77,10 +84,19 @@ function LogoutConfirmDialog({
   );
 }
 
+const PROJECT_SELECT_ALL = "__all__";
+
 function getCurrentProjectId(pathname: string): string | null {
   const match = pathname.match(/^\/dashboard\/project\/([^/]+)/);
   return match ? match[1] : null;
 }
+
+const PROJECT_PAGES = [
+  { path: "" as const, label: "Board", icon: LayoutDashboard },
+  { path: "people" as const, label: "People", icon: Users },
+  { path: "settings" as const, label: "Settings", icon: Settings },
+  { path: "backlog" as const, label: "Backlog", icon: ListChecks },
+] as const;
 
 export function AppSidebar() {
   const navigate = useNavigate();
@@ -184,57 +200,87 @@ export function AppSidebar() {
 
           <SidebarContent className="min-h-0 flex-1 overflow-auto">
           <SidebarGroup>
-            <SidebarGroupLabel className="text-xs text-zinc-500">Projects</SidebarGroupLabel>
+            <SidebarGroupLabel className="text-xs text-zinc-500">Project</SidebarGroupLabel>
             <SidebarGroupContent>
               {sidebarLoading ? (
-                <div className="flex flex-col gap-2 px-2 py-1">
-                  <div className="flex items-center gap-2 rounded-md px-2 py-2">
-                    <Skeleton className="size-4 shrink-0 rounded bg-zinc-200/80" />
-                    <Skeleton className="h-4 w-24 bg-zinc-200/80" />
-                  </div>
-                  {[1, 2, 3, 4].map((i) => (
-                    <div key={i} className="flex items-center gap-2 rounded-md px-2 py-2">
-                      <Skeleton className="size-4 shrink-0 rounded bg-zinc-200/80" />
-                      <Skeleton className="h-4 w-full max-w-[140px] bg-zinc-200/60" />
-                    </div>
-                  ))}
+                <div className="px-2 py-1">
+                  <Skeleton className="h-9 w-full rounded-md bg-zinc-200/80" />
                 </div>
               ) : (
-                <SidebarMenu>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={currentPath === "/dashboard" || currentPath === "/dashboard/"}
-                      tooltip="All projects"
-                    >
-                      <Link to="/dashboard" onClick={closeMobileSidebar}>
-                        <FolderOpen className="size-4" />
-                        <span>All projects</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  {projects.map((project) => (
-                    <SidebarMenuItem key={project.id}>
-                      <SidebarMenuButton
-                        asChild
-                        isActive={currentProjectId === project.id}
-                        tooltip={project.name}
-                      >
-                        <Link
-                          to="/dashboard/project/$projectId"
-                          params={{ projectId: project.id }}
-                          onClick={closeMobileSidebar}
-                        >
-                          <ListTodo className="size-4" />
-                          <span className="truncate">{project.name}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
+                <Select
+                  value={currentProjectId ?? PROJECT_SELECT_ALL}
+                  onValueChange={(value) => {
+                    closeMobileSidebar();
+                    if (value === PROJECT_SELECT_ALL) {
+                      navigate({ to: "/dashboard" });
+                    } else {
+                      navigate({ to: "/dashboard/project/$projectId", params: { projectId: value } });
+                    }
+                  }}
+                >
+                  <SelectTrigger className="w-full h-9 rounded-md border-zinc-200 bg-white/80 text-zinc-900 group-data-[collapsible=icon]:hidden">
+                    <SelectValue placeholder="Select project" />
+                  </SelectTrigger>
+                  <SelectContent align="start" className="max-h-[min(60vh,400px)]">
+                    <SelectItem value={PROJECT_SELECT_ALL} className="capitalize">
+                      All projects
+                    </SelectItem>
+                    {projects.map((project) => (
+                      <SelectItem key={project.id} value={project.id}>
+                        <span className="truncate">{project.name}</span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               )}
             </SidebarGroupContent>
           </SidebarGroup>
+
+          {currentProjectId && (
+            <SidebarGroup>
+              <SidebarGroupLabel className="text-xs text-zinc-500">Pages</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {PROJECT_PAGES.map(({ path, label, icon: Icon }) => {
+                    const isIndex = path === "";
+                    const isActive =
+                      isIndex
+                        ? currentPath === `/dashboard/project/${currentProjectId}` || currentPath === `/dashboard/project/${currentProjectId}/`
+                        : currentPath === `/dashboard/project/${currentProjectId}/${path}`;
+                    return (
+                      <SidebarMenuItem key={path || "board"}>
+                        <SidebarMenuButton
+                          asChild
+                          isActive={!!isActive}
+                          tooltip={label}
+                        >
+                          {isIndex ? (
+                            <Link
+                              to="/dashboard/project/$projectId"
+                              params={{ projectId: currentProjectId }}
+                              onClick={closeMobileSidebar}
+                            >
+                              <Icon className="size-4" />
+                              <span className="group-data-[collapsible=icon]:hidden">{label}</span>
+                            </Link>
+                          ) : (
+                            <Link
+                              to={`/dashboard/project/$projectId/${path}`}
+                              params={{ projectId: currentProjectId }}
+                              onClick={closeMobileSidebar}
+                            >
+                              <Icon className="size-4" />
+                              <span className="group-data-[collapsible=icon]:hidden">{label}</span>
+                            </Link>
+                          )}
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    );
+                  })}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          )}
         </SidebarContent>
 
         <SidebarFooter className="px-3 py-3 border-t border-zinc-200 shrink-0 mt-auto">

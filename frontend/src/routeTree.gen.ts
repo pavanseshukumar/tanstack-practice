@@ -17,6 +17,9 @@ import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as DashboardTaskTaskIdRouteImport } from './routes/dashboard/task.$taskId'
 import { Route as DashboardProjectProjectIdRouteRouteImport } from './routes/dashboard/project.$projectId/route'
 import { Route as DashboardProjectProjectIdIndexRouteImport } from './routes/dashboard/project.$projectId/index'
+import { Route as DashboardProjectProjectIdSettingsRouteImport } from './routes/dashboard/project.$projectId/settings'
+import { Route as DashboardProjectProjectIdPeopleRouteImport } from './routes/dashboard/project.$projectId/people'
+import { Route as DashboardProjectProjectIdBacklogRouteImport } from './routes/dashboard/project.$projectId/backlog'
 import { Route as DashboardProjectProjectIdTaskTaskIdRouteImport } from './routes/dashboard/project.$projectId/task.$taskId'
 
 const RegisterRoute = RegisterRouteImport.update({
@@ -61,6 +64,24 @@ const DashboardProjectProjectIdIndexRoute =
     path: '/',
     getParentRoute: () => DashboardProjectProjectIdRouteRoute,
   } as any)
+const DashboardProjectProjectIdSettingsRoute =
+  DashboardProjectProjectIdSettingsRouteImport.update({
+    id: '/settings',
+    path: '/settings',
+    getParentRoute: () => DashboardProjectProjectIdRouteRoute,
+  } as any)
+const DashboardProjectProjectIdPeopleRoute =
+  DashboardProjectProjectIdPeopleRouteImport.update({
+    id: '/people',
+    path: '/people',
+    getParentRoute: () => DashboardProjectProjectIdRouteRoute,
+  } as any)
+const DashboardProjectProjectIdBacklogRoute =
+  DashboardProjectProjectIdBacklogRouteImport.update({
+    id: '/backlog',
+    path: '/backlog',
+    getParentRoute: () => DashboardProjectProjectIdRouteRoute,
+  } as any)
 const DashboardProjectProjectIdTaskTaskIdRoute =
   DashboardProjectProjectIdTaskTaskIdRouteImport.update({
     id: '/task/$taskId',
@@ -76,6 +97,9 @@ export interface FileRoutesByFullPath {
   '/dashboard/': typeof DashboardIndexRoute
   '/dashboard/project/$projectId': typeof DashboardProjectProjectIdRouteRouteWithChildren
   '/dashboard/task/$taskId': typeof DashboardTaskTaskIdRoute
+  '/dashboard/project/$projectId/backlog': typeof DashboardProjectProjectIdBacklogRoute
+  '/dashboard/project/$projectId/people': typeof DashboardProjectProjectIdPeopleRoute
+  '/dashboard/project/$projectId/settings': typeof DashboardProjectProjectIdSettingsRoute
   '/dashboard/project/$projectId/': typeof DashboardProjectProjectIdIndexRoute
   '/dashboard/project/$projectId/task/$taskId': typeof DashboardProjectProjectIdTaskTaskIdRoute
 }
@@ -85,6 +109,9 @@ export interface FileRoutesByTo {
   '/register': typeof RegisterRoute
   '/dashboard': typeof DashboardIndexRoute
   '/dashboard/task/$taskId': typeof DashboardTaskTaskIdRoute
+  '/dashboard/project/$projectId/backlog': typeof DashboardProjectProjectIdBacklogRoute
+  '/dashboard/project/$projectId/people': typeof DashboardProjectProjectIdPeopleRoute
+  '/dashboard/project/$projectId/settings': typeof DashboardProjectProjectIdSettingsRoute
   '/dashboard/project/$projectId': typeof DashboardProjectProjectIdIndexRoute
   '/dashboard/project/$projectId/task/$taskId': typeof DashboardProjectProjectIdTaskTaskIdRoute
 }
@@ -97,6 +124,9 @@ export interface FileRoutesById {
   '/dashboard/': typeof DashboardIndexRoute
   '/dashboard/project/$projectId': typeof DashboardProjectProjectIdRouteRouteWithChildren
   '/dashboard/task/$taskId': typeof DashboardTaskTaskIdRoute
+  '/dashboard/project/$projectId/backlog': typeof DashboardProjectProjectIdBacklogRoute
+  '/dashboard/project/$projectId/people': typeof DashboardProjectProjectIdPeopleRoute
+  '/dashboard/project/$projectId/settings': typeof DashboardProjectProjectIdSettingsRoute
   '/dashboard/project/$projectId/': typeof DashboardProjectProjectIdIndexRoute
   '/dashboard/project/$projectId/task/$taskId': typeof DashboardProjectProjectIdTaskTaskIdRoute
 }
@@ -110,6 +140,9 @@ export interface FileRouteTypes {
     | '/dashboard/'
     | '/dashboard/project/$projectId'
     | '/dashboard/task/$taskId'
+    | '/dashboard/project/$projectId/backlog'
+    | '/dashboard/project/$projectId/people'
+    | '/dashboard/project/$projectId/settings'
     | '/dashboard/project/$projectId/'
     | '/dashboard/project/$projectId/task/$taskId'
   fileRoutesByTo: FileRoutesByTo
@@ -119,6 +152,9 @@ export interface FileRouteTypes {
     | '/register'
     | '/dashboard'
     | '/dashboard/task/$taskId'
+    | '/dashboard/project/$projectId/backlog'
+    | '/dashboard/project/$projectId/people'
+    | '/dashboard/project/$projectId/settings'
     | '/dashboard/project/$projectId'
     | '/dashboard/project/$projectId/task/$taskId'
   id:
@@ -130,6 +166,9 @@ export interface FileRouteTypes {
     | '/dashboard/'
     | '/dashboard/project/$projectId'
     | '/dashboard/task/$taskId'
+    | '/dashboard/project/$projectId/backlog'
+    | '/dashboard/project/$projectId/people'
+    | '/dashboard/project/$projectId/settings'
     | '/dashboard/project/$projectId/'
     | '/dashboard/project/$projectId/task/$taskId'
   fileRoutesById: FileRoutesById
@@ -199,6 +238,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardProjectProjectIdIndexRouteImport
       parentRoute: typeof DashboardProjectProjectIdRouteRoute
     }
+    '/dashboard/project/$projectId/settings': {
+      id: '/dashboard/project/$projectId/settings'
+      path: '/settings'
+      fullPath: '/dashboard/project/$projectId/settings'
+      preLoaderRoute: typeof DashboardProjectProjectIdSettingsRouteImport
+      parentRoute: typeof DashboardProjectProjectIdRouteRoute
+    }
+    '/dashboard/project/$projectId/people': {
+      id: '/dashboard/project/$projectId/people'
+      path: '/people'
+      fullPath: '/dashboard/project/$projectId/people'
+      preLoaderRoute: typeof DashboardProjectProjectIdPeopleRouteImport
+      parentRoute: typeof DashboardProjectProjectIdRouteRoute
+    }
+    '/dashboard/project/$projectId/backlog': {
+      id: '/dashboard/project/$projectId/backlog'
+      path: '/backlog'
+      fullPath: '/dashboard/project/$projectId/backlog'
+      preLoaderRoute: typeof DashboardProjectProjectIdBacklogRouteImport
+      parentRoute: typeof DashboardProjectProjectIdRouteRoute
+    }
     '/dashboard/project/$projectId/task/$taskId': {
       id: '/dashboard/project/$projectId/task/$taskId'
       path: '/task/$taskId'
@@ -210,12 +270,20 @@ declare module '@tanstack/react-router' {
 }
 
 interface DashboardProjectProjectIdRouteRouteChildren {
+  DashboardProjectProjectIdBacklogRoute: typeof DashboardProjectProjectIdBacklogRoute
+  DashboardProjectProjectIdPeopleRoute: typeof DashboardProjectProjectIdPeopleRoute
+  DashboardProjectProjectIdSettingsRoute: typeof DashboardProjectProjectIdSettingsRoute
   DashboardProjectProjectIdIndexRoute: typeof DashboardProjectProjectIdIndexRoute
   DashboardProjectProjectIdTaskTaskIdRoute: typeof DashboardProjectProjectIdTaskTaskIdRoute
 }
 
 const DashboardProjectProjectIdRouteRouteChildren: DashboardProjectProjectIdRouteRouteChildren =
   {
+    DashboardProjectProjectIdBacklogRoute:
+      DashboardProjectProjectIdBacklogRoute,
+    DashboardProjectProjectIdPeopleRoute: DashboardProjectProjectIdPeopleRoute,
+    DashboardProjectProjectIdSettingsRoute:
+      DashboardProjectProjectIdSettingsRoute,
     DashboardProjectProjectIdIndexRoute: DashboardProjectProjectIdIndexRoute,
     DashboardProjectProjectIdTaskTaskIdRoute:
       DashboardProjectProjectIdTaskTaskIdRoute,
