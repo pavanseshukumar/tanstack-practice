@@ -30,6 +30,9 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export const Route = createFileRoute("/dashboard/")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    create: search.create === "true" || search.create === true,
+  }),
   component: ProjectsListPage,
 });
 
@@ -55,6 +58,7 @@ function ensureDefaultProject() {
 
 function ProjectsListPage() {
   const navigate = useNavigate();
+  const { create: openCreateFromSearch } = Route.useSearch();
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
@@ -68,6 +72,13 @@ function ProjectsListPage() {
     const id = setTimeout(() => setIsLoading(false), 80);
     return () => clearTimeout(id);
   }, []);
+
+  useEffect(() => {
+    if (openCreateFromSearch) {
+      setCreateOpen(true);
+      navigate({ to: "/dashboard", search: {} });
+    }
+  }, [openCreateFromSearch, navigate]);
 
   const handleCreateProject = (e: React.FormEvent) => {
     e.preventDefault();

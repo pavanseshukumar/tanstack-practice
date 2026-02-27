@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { ListTodo, LogOut, LayoutDashboard, Users, Settings, ListChecks, X } from "lucide-react";
+import { ListTodo, LogOut, LayoutDashboard, Users, Settings, ListChecks, X, ChevronsUpDown, FolderOpen, Plus } from "lucide-react";
 import { Link, useMatches } from "@tanstack/react-router";
 import {
   Sidebar,
@@ -19,13 +19,7 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useSidebarResize } from "@/contexts/SidebarResizeContext";
 import { getProjectsFromStorage, getProjectById, type Project } from "@/lib/projects";
 
@@ -84,8 +78,6 @@ function LogoutConfirmDialog({
   );
 }
 
-const PROJECT_SELECT_ALL = "__all__";
-
 function getCurrentProjectId(pathname: string): string | null {
   const match = pathname.match(/^\/dashboard\/project\/([^/]+)/);
   return match ? match[1] : null;
@@ -105,6 +97,7 @@ export function AppSidebar() {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
   const [sidebarLoading, setSidebarLoading] = useState(true);
+  const [projectPopoverOpen, setProjectPopoverOpen] = useState(false);
   const currentProjectId = getCurrentProjectId(currentPath);
   const resize = useSidebarResize();
   const { isMobile, state, setOpenMobile } = useSidebar();
@@ -181,9 +174,70 @@ export function AppSidebar() {
               <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-zinc-900 text-white">
                 <ListTodo className="size-4" />
               </div>
-              <span className="text-base font-semibold tracking-tight text-zinc-900 group-data-[collapsible=icon]:hidden flex-1 min-w-0">
-                TaskBoard
-              </span>
+              {sidebarLoading ? (
+                <div className="flex-1 min-w-0 group-data-[collapsible=icon]:hidden">
+                  <Skeleton className="h-4 w-24 bg-zinc-200/80" />
+                  <Skeleton className="h-3 w-16 mt-1 bg-zinc-200/60" />
+                </div>
+              ) : (
+                <Popover open={projectPopoverOpen} onOpenChange={setProjectPopoverOpen}>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      className="flex flex-1 min-w-0 items-center gap-2 rounded-md p-0 text-left outline-none ring-sidebar-ring focus-visible:ring-2 group-data-[collapsible=icon]:hidden hover:opacity-90"
+                      aria-label="Switch project"
+                    >
+                      <div className="flex-1 min-w-0 truncate">
+                        <span className="block text-base font-semibold tracking-tight text-zinc-900 truncate">
+                          {currentProjectId
+                            ? (getProjectById(currentProjectId)?.name ?? "Project")
+                            : "All projects"}
+                        </span>
+                        <span className="block text-xs text-zinc-500 truncate mt-0.5">
+                          {currentProjectId ? "Project" : "Dashboard"}
+                        </span>
+                      </div>
+                      <ChevronsUpDown className="size-4 shrink-0 text-zinc-400" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent align="start" side="right" className="w-56 p-0">
+                    <p className="text-xs text-zinc-500 px-2 py-1.5 font-medium">Projects</p>
+                    <div className="max-h-[min(60vh,320px)] overflow-y-auto py-1">
+                      <Link
+                        to="/dashboard"
+                        onClick={() => { closeMobileSidebar(); setProjectPopoverOpen(false); }}
+                        className="flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-zinc-900 hover:bg-zinc-100"
+                      >
+                        <FolderOpen className="size-4 shrink-0 text-zinc-600" />
+                        <span className="truncate">All projects</span>
+                      </Link>
+                      {projects.map((project) => (
+                        <Link
+                          key={project.id}
+                          to="/dashboard/project/$projectId"
+                          params={{ projectId: project.id }}
+                          onClick={() => { closeMobileSidebar(); setProjectPopoverOpen(false); }}
+                          className="flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-zinc-900 hover:bg-zinc-100"
+                        >
+                          <ListTodo className="size-4 shrink-0 text-zinc-600" />
+                          <span className="truncate">{project.name}</span>
+                        </Link>
+                      ))}
+                    </div>
+                    <div className="border-t border-zinc-100 p-1">
+                      <Link
+                        to="/dashboard"
+                        search={{ create: true }}
+                        onClick={() => { closeMobileSidebar(); setProjectPopoverOpen(false); }}
+                        className="flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm font-medium text-zinc-900 hover:bg-zinc-100"
+                      >
+                        <Plus className="size-4 shrink-0" />
+                        New project
+                      </Link>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              )}
               {isMobile && (
                 <Button
                   variant="ghost"
@@ -199,42 +253,6 @@ export function AppSidebar() {
           </SidebarHeader>
 
           <SidebarContent className="min-h-0 flex-1 overflow-auto">
-          <SidebarGroup>
-            <SidebarGroupLabel className="text-xs text-zinc-500">Project</SidebarGroupLabel>
-            <SidebarGroupContent>
-              {sidebarLoading ? (
-                <div className="px-2 py-1">
-                  <Skeleton className="h-9 w-full rounded-md bg-zinc-200/80" />
-                </div>
-              ) : (
-                <Select
-                  value={currentProjectId ?? PROJECT_SELECT_ALL}
-                  onValueChange={(value) => {
-                    closeMobileSidebar();
-                    if (value === PROJECT_SELECT_ALL) {
-                      navigate({ to: "/dashboard" });
-                    } else {
-                      navigate({ to: "/dashboard/project/$projectId", params: { projectId: value } });
-                    }
-                  }}
-                >
-                  <SelectTrigger className="w-full h-9 rounded-md border-zinc-200 bg-white/80 text-zinc-900 group-data-[collapsible=icon]:hidden">
-                    <SelectValue placeholder="Select project" />
-                  </SelectTrigger>
-                  <SelectContent align="start" className="max-h-[min(60vh,400px)]">
-                    <SelectItem value={PROJECT_SELECT_ALL} className="capitalize">
-                      All projects
-                    </SelectItem>
-                    {projects.map((project) => (
-                      <SelectItem key={project.id} value={project.id}>
-                        <span className="truncate">{project.name}</span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            </SidebarGroupContent>
-          </SidebarGroup>
 
           {currentProjectId && (
             <SidebarGroup>
