@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/sheet";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarGroup } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Plus } from "lucide-react";
 import {
   Select,
@@ -71,9 +72,12 @@ function ProjectBoardPage() {
   const [newTaskStatus, setNewTaskStatus] = useState<string>("todo");
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [addTaskOpen, setAddTaskOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     setTasks(getTasksByProjectId(projectId));
+    const id = setTimeout(() => setIsLoading(false), 80);
+    return () => clearTimeout(id);
   }, [projectId]);
 
   const projectPeople = useMemo(() => {
@@ -142,7 +146,7 @@ function ProjectBoardPage() {
     setAddTaskOpen(false);
   };
 
-  if (!project) {
+  if (!project && !isLoading) {
     return (
       <div className="flex min-h-full flex-col items-center justify-center gap-4 bg-zinc-100 p-4">
         <p className="text-zinc-600">Project not found.</p>
@@ -152,6 +156,56 @@ function ProjectBoardPage() {
         >
           Back to projects
         </Link>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="bg-zinc-100 min-h-full">
+        <div className="flex items-center justify-between px-6 py-4">
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-4 w-20 bg-zinc-200/80" />
+            <Skeleton className="h-3 w-3 rounded-full bg-zinc-200/80" />
+            <div className="space-y-1">
+              <Skeleton className="h-6 w-40 bg-zinc-200/80" />
+              <Skeleton className="h-4 w-48 bg-zinc-200/60" />
+            </div>
+          </div>
+          <div className="flex -space-x-2">
+            {[1, 2, 3].map((i) => (
+              <Skeleton key={i} className="size-6 rounded-full bg-zinc-200/80 ring-2 ring-zinc-100" />
+            ))}
+          </div>
+        </div>
+        <div className="px-6 pb-6">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {COLUMN_ORDER.map((column) => {
+              const meta = columnMeta[column] ?? { label: column, accent: "" };
+              return (
+                <div
+                  key={column}
+                  className={`rounded-xl border-2 ${meta.accent} flex min-h-[520px] flex-col overflow-hidden`}
+                >
+                  <div className="border-b border-inherit px-4 py-3">
+                    <Skeleton className="h-4 w-16 bg-zinc-200/80" />
+                    <Skeleton className="mt-1 h-3 w-12 bg-zinc-200/60" />
+                  </div>
+                  <div className="flex-1 p-3 space-y-3">
+                    {[1, 2].map((i) => (
+                      <div key={i} className="rounded-lg border border-zinc-200 bg-white p-4 space-y-2">
+                        <Skeleton className="h-4 w-full bg-zinc-200/80" />
+                        <Skeleton className="h-3 w-3/4 bg-zinc-200/60" />
+                        <Skeleton className="h-3 w-1/3 bg-zinc-200/60" />
+                        <Skeleton className="h-8 w-full rounded-md bg-zinc-200/60" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
     );
   }

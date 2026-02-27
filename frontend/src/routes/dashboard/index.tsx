@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/sheet";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export const Route = createFileRoute("/dashboard/")({
   component: ProjectsListPage,
@@ -55,6 +56,7 @@ function ensureDefaultProject() {
 function ProjectsListPage() {
   const navigate = useNavigate();
   const [projects, setProjects] = useState<Project[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
   const [newName, setNewName] = useState("");
   const [newDescription, setNewDescription] = useState("");
@@ -63,6 +65,8 @@ function ProjectsListPage() {
   useEffect(() => {
     ensureDefaultProject();
     setProjects(getProjectsFromStorage());
+    const id = setTimeout(() => setIsLoading(false), 80);
+    return () => clearTimeout(id);
   }, []);
 
   const handleCreateProject = (e: React.FormEvent) => {
@@ -101,6 +105,38 @@ function ProjectsListPage() {
     "bg-violet-50/90 border-violet-200/80 shadow-violet-200/20",
     "bg-amber-50 border-amber-200/80 shadow-amber-200/20",
   ];
+
+  if (isLoading) {
+    return (
+      <div className="min-h-full bg-gradient-to-br from-stone-100 via-amber-50/40 to-stone-100">
+        <div className="mr-auto max-w-6xl pl-20 pr-6 py-10">
+          <header className="mb-12">
+            <Skeleton className="h-9 w-48 bg-stone-200/80" />
+            <Skeleton className="mt-2 h-5 w-80 max-w-md bg-stone-200/60" />
+          </header>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 pb-8">
+            {[1, 2, 3, 4].map((i) => (
+              <div
+                key={i}
+                className="flex min-h-[220px] flex-col rounded-sm border-2 border-stone-200/60 bg-white/80 p-6"
+              >
+                <div className="flex items-start gap-3">
+                  <Skeleton className="size-10 shrink-0 rounded-lg bg-stone-200/80" />
+                  <div className="min-w-0 flex-1 space-y-2">
+                    <Skeleton className="h-5 w-3/4 bg-stone-200/80" />
+                    <Skeleton className="h-4 w-full bg-stone-200/60" />
+                    <Skeleton className="h-4 w-2/3 bg-stone-200/60" />
+                    <Skeleton className="mt-3 h-4 w-20 bg-stone-200/60" />
+                  </div>
+                </div>
+                <Skeleton className="mt-4 h-4 w-24 bg-stone-200/60" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-full bg-gradient-to-br from-stone-100 via-amber-50/40 to-stone-100">

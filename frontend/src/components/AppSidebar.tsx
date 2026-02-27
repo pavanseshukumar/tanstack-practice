@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { getProjectsFromStorage, type Project } from "@/lib/projects";
 
 function getUserEmail(): string {
@@ -86,11 +87,14 @@ export function AppSidebar() {
   const currentPath = matches[matches.length - 1]?.fullPath ?? "";
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [sidebarLoading, setSidebarLoading] = useState(true);
   const currentProjectId = getCurrentProjectId(currentPath);
 
   useEffect(() => {
     setProjects(getProjectsFromStorage());
-  }, [currentPath]); // re-fetch when route changes (e.g. after creating a project)
+    const id = setTimeout(() => setSidebarLoading(false), 80);
+    return () => clearTimeout(id);
+  }, [currentPath]);
 
   const email = getUserEmail();
   const initials = getInitials(email);
@@ -121,37 +125,52 @@ export function AppSidebar() {
           <SidebarGroup>
             <SidebarGroupLabel className="text-xs text-zinc-500">Projects</SidebarGroupLabel>
             <SidebarGroupContent>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={currentPath === "/dashboard" || currentPath === "/dashboard/"}
-                    tooltip="All projects"
-                  >
-                    <Link to="/dashboard">
-                      <FolderOpen className="size-4" />
-                      <span>All projects</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                {projects.map((project) => (
-                  <SidebarMenuItem key={project.id}>
+              {sidebarLoading ? (
+                <div className="flex flex-col gap-2 px-2 py-1">
+                  <div className="flex items-center gap-2 rounded-md px-2 py-2">
+                    <Skeleton className="size-4 shrink-0 rounded bg-zinc-200/80" />
+                    <Skeleton className="h-4 w-24 bg-zinc-200/80" />
+                  </div>
+                  {[1, 2, 3, 4].map((i) => (
+                    <div key={i} className="flex items-center gap-2 rounded-md px-2 py-2">
+                      <Skeleton className="size-4 shrink-0 rounded bg-zinc-200/80" />
+                      <Skeleton className="h-4 w-full max-w-[140px] bg-zinc-200/60" />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <SidebarMenu>
+                  <SidebarMenuItem>
                     <SidebarMenuButton
                       asChild
-                      isActive={currentProjectId === project.id}
-                      tooltip={project.name}
+                      isActive={currentPath === "/dashboard" || currentPath === "/dashboard/"}
+                      tooltip="All projects"
                     >
-                      <Link
-                        to="/dashboard/project/$projectId"
-                        params={{ projectId: project.id }}
-                      >
-                        <ListTodo className="size-4" />
-                        <span className="truncate">{project.name}</span>
+                      <Link to="/dashboard">
+                        <FolderOpen className="size-4" />
+                        <span>All projects</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
+                  {projects.map((project) => (
+                    <SidebarMenuItem key={project.id}>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={currentProjectId === project.id}
+                        tooltip={project.name}
+                      >
+                        <Link
+                          to="/dashboard/project/$projectId"
+                          params={{ projectId: project.id }}
+                        >
+                          <ListTodo className="size-4" />
+                          <span className="truncate">{project.name}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              )}
             </SidebarGroupContent>
           </SidebarGroup>
         </SidebarContent>
