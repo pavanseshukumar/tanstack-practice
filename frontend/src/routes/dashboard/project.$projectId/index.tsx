@@ -7,16 +7,17 @@ import {
   type Task,
 } from "@/lib/tasks";
 import { getProjectById } from "@/lib/projects";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from "@/components/ui/sheet";
 import { Label } from "@/components/ui/label";
+import { Avatar, AvatarFallback, AvatarGroup } from "@/components/ui/avatar";
+import { Plus } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -24,6 +25,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
+function getCurrentUserInitials(): string {
+  try {
+    const raw = localStorage.getItem("user");
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      const email = parsed?.email ?? "";
+      return email.slice(0, 2).toUpperCase() || "U";
+    }
+  } catch {
+    /* empty */
+  }
+  return "U";
+}
 
 export const Route = createFileRoute("/dashboard/project/$projectId/")({
   component: ProjectBoardPage,
@@ -55,10 +70,25 @@ function ProjectBoardPage() {
   const [newTaskAssigned, setNewTaskAssigned] = useState("");
   const [newTaskStatus, setNewTaskStatus] = useState<string>("todo");
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [addTaskOpen, setAddTaskOpen] = useState(false);
 
   useEffect(() => {
     setTasks(getTasksByProjectId(projectId));
   }, [projectId]);
+
+  const projectPeople = useMemo(() => {
+    const names = new Set<string>();
+    tasks.forEach((t) => {
+      if (t.assigned?.trim()) names.add(t.assigned.trim());
+      if (t.createdBy?.trim()) names.add(t.createdBy.trim());
+    });
+    const current = getCurrentUserInitials();
+    if (!names.size) return [{ id: "you", initials: current }];
+    return Array.from(names).slice(0, 5).map((name, i) => ({
+      id: String(i),
+      initials: name.slice(0, 2).toUpperCase(),
+    }));
+  }, [tasks]);
 
   const persistProjectTasks = (projectTasks: Task[]) => {
     const all = getTasksFromStorage();
@@ -109,6 +139,7 @@ function ProjectBoardPage() {
     setNewTaskCreatedBy("");
     setNewTaskAssigned("");
     setNewTaskStatus("todo");
+    setAddTaskOpen(false);
   };
 
   if (!project) {
@@ -126,8 +157,8 @@ function ProjectBoardPage() {
   }
 
   return (
-    <Sheet>
-      <div className="bg-zinc-100 min-h-full">
+    <Sheet open={addTaskOpen} onOpenChange={setAddTaskOpen}>
+      <div className="relative bg-zinc-100 min-h-full">
         <div className="flex items-center justify-between px-6 py-4">
           <div className="flex items-center gap-3">
             <Link
@@ -146,11 +177,15 @@ function ProjectBoardPage() {
               </p>
             </div>
           </div>
-          <SheetTrigger asChild>
-            <button className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-2 transition-colors">
-              + Add task
-            </button>
-          </SheetTrigger>
+          <AvatarGroup className="flex *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:ring-zinc-100">
+            {projectPeople.map((p) => (
+              <Avatar key={p.id} size="sm">
+                <AvatarFallback className="bg-zinc-300 text-zinc-700 text-xs font-medium">
+                  {p.initials}
+                </AvatarFallback>
+              </Avatar>
+            ))}
+          </AvatarGroup>
         </div>
 
         <div className="px-6 pb-6">
@@ -189,6 +224,15 @@ function ProjectBoardPage() {
           </div>
         </div>
       </div>
+
+      <button
+        type="button"
+        onClick={() => setAddTaskOpen(true)}
+        className="fixed bottom-8 right-8 z-10 flex items-center gap-2 rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white shadow-lg transition-all hover:bg-zinc-800 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-2"
+      >
+        <Plus className="size-4" />
+        + Add task
+      </button>
 
       <SheetContent className="w-full max-w-md border-zinc-200 bg-white sm:max-w-md">
         <SheetHeader className="space-y-1">

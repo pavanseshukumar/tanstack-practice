@@ -115,46 +115,6 @@ function ProjectsListPage() {
         </header>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 pb-8">
-          {projects.map((project, i) => {
-            const taskCount = getTasksByProjectId(project.id).length;
-            const rotation = noteRotations[i % noteRotations.length];
-            const colors = noteColors[i % noteColors.length];
-            return (
-              <Link
-                key={project.id}
-                to="/dashboard/project/$projectId"
-                params={{ projectId: project.id }}
-                className="group block w-full"
-              >
-                <div
-                  className={`relative flex min-h-[220px] flex-col rounded-sm border-2 ${colors} p-6 shadow-lg transition-transform duration-200 hover:rotate-0 hover:scale-[1.02] hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-stone-400 focus:ring-offset-4 focus:ring-offset-transparent ${rotation}`}
-                  style={{ boxShadow: "4px 6px 12px rgba(0,0,0,0.08)" }}
-                >
-                  <div className="absolute right-2 top-2 h-4 w-4 rounded-full bg-stone-300/40 group-hover:bg-stone-400/50" title="Pin" />
-                  <div className="flex flex-1 flex-col gap-2 pt-1">
-                    <h2 className="text-lg font-semibold text-stone-800 truncate pr-4">
-                      {project.name}
-                    </h2>
-                    <div className="min-h-[3.75rem]">
-                      {project.description ? (
-                        <p className="text-base text-stone-600 line-clamp-3">
-                          {project.description}
-                        </p>
-                      ) : null}
-                    </div>
-                    <div className="mt-auto flex items-center gap-1.5 text-sm text-stone-500">
-                      <ListTodo className="size-3.5 shrink-0" />
-                      <span>{taskCount} task{taskCount !== 1 ? "s" : ""}</span>
-                    </div>
-                  </div>
-                  <span className="mt-3 inline-flex text-base font-medium text-stone-600 group-hover:text-stone-800 transition-colors">
-                    Open board →
-                  </span>
-                </div>
-              </Link>
-            );
-          })}
-
           <Sheet open={createOpen} onOpenChange={setCreateOpen}>
             <SheetTrigger asChild>
               <button
@@ -227,6 +187,46 @@ function ProjectsListPage() {
               </form>
             </SheetContent>
           </Sheet>
+
+          {projects.map((project, i) => {
+            const taskCount = getTasksByProjectId(project.id).length;
+            const rotation = noteRotations[i % noteRotations.length];
+            const colors = noteColors[i % noteColors.length];
+            return (
+              <Link
+                key={project.id}
+                to="/dashboard/project/$projectId"
+                params={{ projectId: project.id }}
+                className="group block w-full"
+              >
+                <div
+                  className={`relative flex min-h-[220px] flex-col rounded-sm border-2 ${colors} p-6 shadow-lg transition-transform duration-200 hover:rotate-0 hover:scale-[1.02] hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-stone-400 focus:ring-offset-4 focus:ring-offset-transparent ${rotation}`}
+                  style={{ boxShadow: "4px 6px 12px rgba(0,0,0,0.08)" }}
+                >
+                  <div className="absolute right-2 top-2 h-4 w-4 rounded-full bg-stone-300/40 group-hover:bg-stone-400/50" title="Pin" />
+                  <div className="flex flex-1 flex-col gap-2 pt-1">
+                    <h2 className="text-lg font-semibold text-stone-800 truncate pr-4">
+                      {project.name}
+                    </h2>
+                    <div className="min-h-[3.75rem]">
+                      {project.description ? (
+                        <p className="text-base text-stone-600 line-clamp-3">
+                          {project.description}
+                        </p>
+                      ) : null}
+                    </div>
+                    <div className="mt-auto flex items-center gap-1.5 text-sm text-stone-500">
+                      <ListTodo className="size-3.5 shrink-0" />
+                      <span>{taskCount} task{taskCount !== 1 ? "s" : ""}</span>
+                    </div>
+                  </div>
+                  <span className="mt-3 inline-flex text-base font-medium text-stone-600 group-hover:text-stone-800 transition-colors">
+                    Open board →
+                  </span>
+                </div>
+              </Link>
+            );
+          })}
         </div>
 
         {projects.length === 0 && (
