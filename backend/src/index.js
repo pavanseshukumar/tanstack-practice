@@ -3,6 +3,8 @@ import express from "express";
 import cors from "cors";
 import { connectDB } from "./config/db.js";
 import authRoutes from "./routes/auth.js";
+import projectRoutes from "./routes/projects.js";
+import issueRoutes from "./routes/issues.js";
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -11,6 +13,8 @@ app.use(cors({ origin: "http://localhost:3000", credentials: true }));
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
+app.use("/api/projects", projectRoutes);
+app.use("/api/issues", issueRoutes);
 
 app.get("/health", (_req, res) => {
   res.json({ status: "ok" });
