@@ -139,3 +139,14 @@ code {
     @apply bg-background text-foreground;
   }
 }
+
+/* Smooth animation for responsive (mobile) sidebar sheet */
+[data-mobile="true"][data-slot="sidebar"] {
+  animation-duration: 0.3s;
+  animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+[data-mobile="true"][data-slot="sidebar"][data-state="closed"] {
+  animation-duration: 0.25s;
+  animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+}

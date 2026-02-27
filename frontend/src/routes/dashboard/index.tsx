@@ -109,7 +109,7 @@ function ProjectsListPage() {
   if (isLoading) {
     return (
       <div className="min-h-full bg-gradient-to-br from-stone-100 via-amber-50/40 to-stone-100">
-        <div className="mr-auto max-w-6xl pl-20 pr-6 py-10">
+        <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 sm:py-10 md:px-8 md:py-10">
           <header className="mb-12">
             <Skeleton className="h-9 w-48 bg-stone-200/80" />
             <Skeleton className="mt-2 h-5 w-80 max-w-md bg-stone-200/60" />
@@ -140,7 +140,7 @@ function ProjectsListPage() {
 
   return (
     <div className="min-h-full bg-gradient-to-br from-stone-100 via-amber-50/40 to-stone-100">
-      <div className="mr-auto max-w-6xl pl-20 pr-6 py-10">
+      <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 sm:py-10 md:px-8 md:py-10">
         <header className="mb-12">
           <h1 className="text-[32px] font-bold text-stone-800 tracking-tight">
             Projects

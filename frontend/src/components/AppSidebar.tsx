@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { ListTodo, LogOut, FolderOpen } from "lucide-react";
+import { ListTodo, LogOut, FolderOpen, X } from "lucide-react";
 import { Link, useMatches } from "@tanstack/react-router";
 import {
   Sidebar,
@@ -14,11 +14,12 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
-  SidebarSeparator,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useSidebarResize } from "@/contexts/SidebarResizeContext";
 import { getProjectsFromStorage, type Project } from "@/lib/projects";
 
 function getUserEmail(): string {
@@ -89,12 +90,58 @@ export function AppSidebar() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [sidebarLoading, setSidebarLoading] = useState(true);
   const currentProjectId = getCurrentProjectId(currentPath);
+  const resize = useSidebarResize();
+  const { isMobile, state, setOpenMobile } = useSidebar();
+  const isExpanded = state === "expanded";
+  const dragRef = useRef(false);
+  const startXRef = useRef(0);
+  const startWidthRef = useRef(0);
 
   useEffect(() => {
     setProjects(getProjectsFromStorage());
     const id = setTimeout(() => setSidebarLoading(false), 80);
     return () => clearTimeout(id);
   }, [currentPath]);
+
+  const handleResizeMove = useCallback(
+    (e: MouseEvent) => {
+      if (!dragRef.current || !resize) return;
+      const delta = e.clientX - startXRef.current;
+      const newWidth = Math.round(startWidthRef.current + delta);
+      resize.setWidth(newWidth);
+    },
+    [resize]
+  );
+
+  const handleResizeEnd = useCallback(() => {
+    dragRef.current = false;
+    document.body.style.cursor = "";
+    document.body.style.userSelect = "";
+    document.removeEventListener("mousemove", handleResizeMove);
+    document.removeEventListener("mouseup", handleResizeEnd);
+  }, [handleResizeMove]);
+
+  const handleResizeStart = useCallback(
+    (e: React.MouseEvent) => {
+      if (!resize || isMobile) return;
+      e.preventDefault();
+      dragRef.current = true;
+      startXRef.current = e.clientX;
+      startWidthRef.current = resize.width;
+      document.body.style.cursor = "ew-resize";
+      document.body.style.userSelect = "none";
+      document.addEventListener("mousemove", handleResizeMove);
+      document.addEventListener("mouseup", handleResizeEnd);
+    },
+    [resize, isMobile, handleResizeMove, handleResizeEnd]
+  );
+
+  useEffect(() => {
+    return () => {
+      document.removeEventListener("mousemove", handleResizeMove);
+      document.removeEventListener("mouseup", handleResizeEnd);
+    };
+  }, [handleResizeMove, handleResizeEnd]);
 
   const email = getUserEmail();
   const initials = getInitials(email);
@@ -105,23 +152,37 @@ export function AppSidebar() {
     navigate({ to: "/login" });
   };
 
+  const closeMobileSidebar = () => {
+    if (isMobile) setOpenMobile(false);
+  };
+
   return (
     <>
       <Sidebar collapsible="icon">
-        <SidebarHeader className="px-4 py-5">
-          <div className="flex items-center gap-2.5">
-            <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-zinc-900 text-white">
-              <ListTodo className="size-4" />
+        <div className="flex flex-col h-full min-h-0 overflow-hidden">
+          <SidebarHeader className="px-4 py-5 border-b border-zinc-200 shrink-0">
+            <div className="flex items-center gap-2.5 w-full">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-zinc-900 text-white">
+                <ListTodo className="size-4" />
+              </div>
+              <span className="text-base font-semibold tracking-tight text-zinc-900 group-data-[collapsible=icon]:hidden flex-1 min-w-0">
+                TaskBoard
+              </span>
+              {isMobile && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-8 shrink-0"
+                  onClick={closeMobileSidebar}
+                  aria-label="Close menu"
+                >
+                  <X className="size-4" />
+                </Button>
+              )}
             </div>
-            <span className="text-base font-semibold tracking-tight text-zinc-900 group-data-[collapsible=icon]:hidden">
-              TaskBoard
-            </span>
-          </div>
-        </SidebarHeader>
+          </SidebarHeader>
 
-        <SidebarSeparator />
-
-        <SidebarContent>
+          <SidebarContent className="min-h-0 flex-1 overflow-auto">
           <SidebarGroup>
             <SidebarGroupLabel className="text-xs text-zinc-500">Projects</SidebarGroupLabel>
             <SidebarGroupContent>
@@ -146,7 +207,7 @@ export function AppSidebar() {
                       isActive={currentPath === "/dashboard" || currentPath === "/dashboard/"}
                       tooltip="All projects"
                     >
-                      <Link to="/dashboard">
+                      <Link to="/dashboard" onClick={closeMobileSidebar}>
                         <FolderOpen className="size-4" />
                         <span>All projects</span>
                       </Link>
@@ -162,6 +223,7 @@ export function AppSidebar() {
                         <Link
                           to="/dashboard/project/$projectId"
                           params={{ projectId: project.id }}
+                          onClick={closeMobileSidebar}
                         >
                           <ListTodo className="size-4" />
                           <span className="truncate">{project.name}</span>
@@ -175,9 +237,7 @@ export function AppSidebar() {
           </SidebarGroup>
         </SidebarContent>
 
-        <SidebarSeparator />
-
-        <SidebarFooter className="px-3 py-3">
+        <SidebarFooter className="px-3 py-3 border-t border-zinc-200 shrink-0 mt-auto">
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton
@@ -202,7 +262,16 @@ export function AppSidebar() {
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarFooter>
+        </div>
 
+        {!isMobile && isExpanded && resize && (
+          <div
+            role="separator"
+            aria-label="Resize sidebar"
+            onMouseDown={handleResizeStart}
+            className="absolute top-0 right-0 bottom-0 z-30 w-1.5 cursor-ew-resize hover:bg-zinc-300/50 active:bg-zinc-400/50 transition-colors rounded-r group-data-[side=right]:left-0 group-data-[side=right]:right-auto"
+          />
+        )}
         <SidebarRail />
       </Sidebar>
 

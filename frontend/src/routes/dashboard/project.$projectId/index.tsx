@@ -163,13 +163,13 @@ function ProjectBoardPage() {
   if (isLoading) {
     return (
       <div className="bg-zinc-100 min-h-full">
-        <div className="flex items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-start justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4">
+          <div className="flex items-center gap-2 sm:gap-3">
             <Skeleton className="h-4 w-20 bg-zinc-200/80" />
-            <Skeleton className="h-3 w-3 rounded-full bg-zinc-200/80" />
+            <Skeleton className="h-3 w-3 rounded-full bg-zinc-200/80 hidden sm:block" />
             <div className="space-y-1">
-              <Skeleton className="h-6 w-40 bg-zinc-200/80" />
-              <Skeleton className="h-4 w-48 bg-zinc-200/60" />
+              <Skeleton className="h-6 w-32 bg-zinc-200/80 sm:w-40" />
+              <Skeleton className="h-4 w-40 bg-zinc-200/60 sm:w-48" />
             </div>
           </div>
           <div className="flex -space-x-2">
@@ -178,14 +178,14 @@ function ProjectBoardPage() {
             ))}
           </div>
         </div>
-        <div className="px-6 pb-6">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="px-4 pb-6 sm:px-6">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
             {COLUMN_ORDER.map((column) => {
               const meta = columnMeta[column] ?? { label: column, accent: "" };
               return (
                 <div
                   key={column}
-                  className={`rounded-xl border-2 ${meta.accent} flex min-h-[520px] flex-col overflow-hidden`}
+                  className={`rounded-xl border-2 ${meta.accent} flex min-h-[280px] flex-col overflow-hidden sm:min-h-[400px] lg:min-h-[520px]`}
                 >
                   <div className="border-b border-inherit px-4 py-3">
                     <Skeleton className="h-4 w-16 bg-zinc-200/80" />
@@ -213,25 +213,25 @@ function ProjectBoardPage() {
   return (
     <Sheet open={addTaskOpen} onOpenChange={setAddTaskOpen}>
       <div className="relative bg-zinc-100 min-h-full">
-        <div className="flex items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-3">
+        <header className="flex flex-wrap items-start justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4">
+          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2 sm:gap-3">
             <Link
               to="/dashboard"
-              className="text-zinc-500 hover:text-zinc-900 text-sm transition-colors"
+              className="shrink-0 text-zinc-500 hover:text-zinc-900 text-sm transition-colors"
             >
               &larr; Projects
             </Link>
-            <span className="text-zinc-300">/</span>
-            <div>
-              <h2 className="text-xl font-semibold text-zinc-900 tracking-tight">
+            <span className="shrink-0 text-zinc-300 hidden sm:inline">/</span>
+            <div className="min-w-0">
+              <h2 className="truncate text-lg font-semibold text-zinc-900 tracking-tight sm:text-xl">
                 {project.name}
               </h2>
-              <p className="text-sm text-zinc-500 mt-0.5">
+              <p className="text-xs text-zinc-500 mt-0.5 sm:text-sm">
                 {tasks.length} tasks across {COLUMN_ORDER.length} columns
               </p>
             </div>
           </div>
-          <AvatarGroup className="flex *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:ring-zinc-100">
+          <AvatarGroup className="flex shrink-0 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:ring-zinc-100">
             {projectPeople.map((p) => (
               <Avatar key={p.id} size="sm">
                 <AvatarFallback className="bg-zinc-300 text-zinc-700 text-xs font-medium">
@@ -240,26 +240,26 @@ function ProjectBoardPage() {
               </Avatar>
             ))}
           </AvatarGroup>
-        </div>
+        </header>
 
-        <div className="px-6 pb-6">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="px-4 pb-24 sm:pb-6 sm:px-6">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
             {COLUMN_ORDER.map((column) => {
               const meta = columnMeta[column] ?? { label: column, accent: "" };
               return (
                 <div
                   key={column}
-                  className={`rounded-xl border-2 ${meta.accent} flex min-h-[520px] flex-col overflow-hidden`}
+                  className={`rounded-xl border-2 ${meta.accent} flex min-h-[280px] flex-col overflow-hidden sm:min-h-[400px] lg:min-h-[520px]`}
                 >
-                  <div className="border-b border-inherit px-4 py-3">
-                    <h2 className="text-sm font-semibold text-zinc-800 capitalize">
+                  <div className="border-b border-inherit px-3 py-2 sm:px-4 sm:py-3">
+                    <h2 className="text-xs font-semibold text-zinc-800 capitalize sm:text-sm">
                       {meta.label}
                     </h2>
-                    <p className="text-xs text-zinc-500 mt-0.5">
+                    <p className="text-[11px] text-zinc-500 mt-0.5 sm:text-xs">
                       {tasks.filter((t) => t.status === column).length} tasks
                     </p>
                   </div>
-                  <div className="flex-1 overflow-y-auto p-3 space-y-3">
+                  <div className="flex-1 overflow-y-auto p-2 space-y-2 sm:p-3 sm:space-y-3">
                     {tasks
                       .filter((task) => task.status === column)
                       .map((task) => (
@@ -282,13 +282,14 @@ function ProjectBoardPage() {
       <button
         type="button"
         onClick={() => setAddTaskOpen(true)}
-        className="fixed bottom-8 right-8 z-10 flex items-center gap-2 rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white shadow-lg transition-all hover:bg-zinc-800 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-2"
+        className="fixed bottom-6 right-4 z-10 flex items-center gap-2 rounded-lg bg-zinc-900 px-3 py-2.5 text-sm font-medium text-white shadow-lg transition-all hover:bg-zinc-800 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-2 sm:bottom-8 sm:right-8 sm:px-4"
+        aria-label="Add task"
       >
         <Plus className="size-4" />
         + Add task
       </button>
 
-      <SheetContent className="w-full max-w-md border-zinc-200 bg-white sm:max-w-md">
+      <SheetContent className="w-full max-w-[calc(100vw-2rem)] border-zinc-200 bg-white sm:max-w-md">
         <SheetHeader className="space-y-1">
           <SheetTitle className="text-lg font-semibold text-zinc-900">
             New task
@@ -298,7 +299,7 @@ function ProjectBoardPage() {
             later.
           </SheetDescription>
         </SheetHeader>
-        <form onSubmit={handleAddTask} className="mt-6 space-y-5 px-6 pb-8">
+        <form onSubmit={handleAddTask} className="mt-6 space-y-5 px-4 pb-8 sm:px-6">
           {validationErrors.length > 0 && (
             <div
               role="alert"
